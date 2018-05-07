@@ -66,15 +66,6 @@ sub on_start {
 
 	if ($self->x_resource('matcher.pattern')) {
 		@{$self->{pattern}} = ($self->x_resource('matcher.pattern'));
-	} elsif ($self->x_resource('matcher.pattern.0')) {
-		my $current = 0;
-
-		while (defined (my $res = $self->x_resource("matcher.pattern.$current"))) {
-			$res = $self->locale_decode($res);
-			utf8::encode $res;
-			push @{$self->{pattern}}, qr($res)x;
-			$current++;
-		}
 	} else {
 		@{$self->{pattern}} = qr{
 			(?:https?://|ftp://|news://|mailto:|file://|\bwww\.)
@@ -85,6 +76,17 @@ sub on_start {
 				[\w\-\@;\/?:&=%\$+*~]                # exclude some trailing characters (heuristic)
 			)+
 		}x;
+
+		my $current = 1;
+
+		while (defined (my $res = $self->x_resource("matcher.pattern.$current"))) {
+			$res = $self->locale_decode($res);
+			utf8::encode $res;
+			push @{$self->{pattern}}, qr($res)x;
+			$current++;
+		}
+
+
 	}
 
 	()
